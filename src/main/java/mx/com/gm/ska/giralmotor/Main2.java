@@ -5,16 +5,24 @@
  */
 package mx.com.gm.ska.giralmotor;
 
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import mx.com.gm.ska.giralmotor.DaoImpl.EmpresaDaoImpl;
 import mx.com.gm.ska.giralmotor.config.AppConfig;
+import mx.com.gm.ska.giralmotor.model.Configuracion;
 import mx.com.gm.ska.giralmotor.model.Empresa;
+import mx.com.gm.ska.giralmotor.modelDao.ConfiguracionDao;
 import mx.com.gm.ska.giralmotor.modelDao.EmpresaDao;
+import mx.com.gm.ska.giralmotor.otros.AutoCompletion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -29,27 +37,34 @@ public class Main2 extends javax.swing.JFrame {
      * Creates new form Main2
      */
     private static EmpresaDao empresaService;
+    private static ConfiguracionDao configuracionService;
 
-    private void fillEmpresasList() {
+    private Empresa editEmpresa;
+    private Date fechaFactura;
+
+    private void fillEmpresasList(String nombre) {
         DefaultListModel<String> listModel = new DefaultListModel<>();
-        List<Empresa> allEmpresas=empresaService.getAllEmpresas();
-        for(Empresa x:allEmpresas){
-            listModel.addElement(x.getNombre()+" - "+x.getNit());
+        List<Empresa> allEmpresas = empresaService.searchEmpresaByName(nombre);
+        for (Empresa x : allEmpresas) {
+            listModel.addElement(x.getNombre() + " - " + x.getNit());
         }
         this.empresas.setModel(listModel);
     }
-    
-    private void fillEmpresasList(List<Empresa>searchEmp) {
-        DefaultListModel<String> listModel = new DefaultListModel<>();
-        for(Empresa x:searchEmp){
-            listModel.addElement(x.getNombre()+" - "+x.getNit());
-        }
-        this.empresas=new JList<>(listModel);
-    }
 
     public Main2() {
+        DefaultComboBoxModel<String> comboModel = new DefaultComboBoxModel<>();
+        DefaultComboBoxModel<String> comboModel2 = new DefaultComboBoxModel<>();
         initComponents();
-        this.fillEmpresasList();
+        fillEmpresasList("");
+        this.nit_createFac.setEditable(true);
+        this.nombre_createFac.setEditable(true);
+        List<Empresa>allEmpresas=empresaService.getAllEmpresas();
+        for(Empresa e:allEmpresas){
+            comboModel.addElement(e.getNombre());
+        }
+        AutoCompletion.enable(nombre_createFac);
+        this.nit_createFac.setModel(comboModel2);
+        this.nombre_createFac.setModel(comboModel);
         this.empresas.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
@@ -65,22 +80,51 @@ public class Main2 extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
-        jPanel2 = new javax.swing.JPanel();
+        crearEmpresaTab = new javax.swing.JPanel();
         nit = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         nombre = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
-        correo = new javax.swing.JTextField();
+        direccion = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         telefono = new javax.swing.JTextField();
         guardarEmp = new javax.swing.JToggleButton();
-        jPanel3 = new javax.swing.JPanel();
+        empresasTab = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         empresas = new javax.swing.JList<>();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
+        jLabel9 = new javax.swing.JLabel();
+        id_viewEmpresas = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        nombre_viewEmpresa = new javax.swing.JTextField();
+        jLabel11 = new javax.swing.JLabel();
+        direccion_viewEmpresa = new javax.swing.JTextField();
+        jLabel12 = new javax.swing.JLabel();
+        nit_viewEmpresa = new javax.swing.JTextField();
+        jLabel13 = new javax.swing.JLabel();
+        telefono_viewEmpresa = new javax.swing.JTextField();
+        view_empresaActualizar = new javax.swing.JButton();
+        jLabel14 = new javax.swing.JLabel();
+        fieldBuscar_viewEmpresa = new javax.swing.JTextField();
+        viewEmpresasBuscar = new javax.swing.JButton();
+        crearFacturaTab = new javax.swing.JPanel();
+        jLabel8 = new javax.swing.JLabel();
+        numFac_createFac = new javax.swing.JLabel();
+        jLabel16 = new javax.swing.JLabel();
+        date_createFac = new javax.swing.JLabel();
+        jLabel18 = new javax.swing.JLabel();
+        jLabel17 = new javax.swing.JLabel();
+        nombre_createFac = new javax.swing.JComboBox<>();
+        jLabel19 = new javax.swing.JLabel();
+        nit_createFac = new javax.swing.JComboBox<>();
+        jSeparator2 = new javax.swing.JSeparator();
+        configTab = new javax.swing.JPanel();
+        jLabel15 = new javax.swing.JLabel();
+        numFac_config = new javax.swing.JTextField();
+        buttonSaveConfig = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -106,9 +150,15 @@ public class Main2 extends javax.swing.JFrame {
                 .addContainerGap(39, Short.MAX_VALUE))
         );
 
+        jTabbedPane1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTabbedPane1MouseClicked(evt);
+            }
+        });
+
         jLabel2.setText("Nombre");
 
-        jLabel3.setText("Correo");
+        jLabel3.setText("Dirección");
 
         jLabel4.setText("NIT - Cédula");
 
@@ -121,31 +171,31 @@ public class Main2 extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        javax.swing.GroupLayout crearEmpresaTabLayout = new javax.swing.GroupLayout(crearEmpresaTab);
+        crearEmpresaTab.setLayout(crearEmpresaTabLayout);
+        crearEmpresaTabLayout.setHorizontalGroup(
+            crearEmpresaTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(crearEmpresaTabLayout.createSequentialGroup()
                 .addContainerGap(264, Short.MAX_VALUE)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(crearEmpresaTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, crearEmpresaTabLayout.createSequentialGroup()
+                        .addGroup(crearEmpresaTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jLabel5)
                             .addComponent(jLabel3)
                             .addComponent(nit)
                             .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(nombre)
-                            .addComponent(correo)
+                            .addComponent(direccion)
                             .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(telefono, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(216, 216, 216))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, crearEmpresaTabLayout.createSequentialGroup()
                         .addComponent(guardarEmp, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(270, 270, 270))))
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        crearEmpresaTabLayout.setVerticalGroup(
+            crearEmpresaTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(crearEmpresaTabLayout.createSequentialGroup()
                 .addGap(26, 26, 26)
                 .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -157,7 +207,7 @@ public class Main2 extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(correo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(direccion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel5)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -167,7 +217,7 @@ public class Main2 extends javax.swing.JFrame {
                 .addGap(16, 16, 16))
         );
 
-        jTabbedPane1.addTab("Crear Empresa", jPanel2);
+        jTabbedPane1.addTab("Crear Empresa", crearEmpresaTab);
 
         empresas.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
@@ -187,37 +237,253 @@ public class Main2 extends javax.swing.JFrame {
 
         jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(37, 37, 37)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 224, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel6))
-                .addGap(66, 66, 66)
+        jLabel9.setText("ID");
+
+        id_viewEmpresas.setText("id");
+
+        jLabel10.setText("Nombre:");
+
+        jLabel11.setText("Dirección:");
+
+        jLabel12.setText("NIT:");
+
+        jLabel13.setText("Teléfono:");
+
+        view_empresaActualizar.setText("Actualizar");
+        view_empresaActualizar.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                view_empresaActualizarMouseClicked(evt);
+            }
+        });
+
+        jLabel14.setText("Buscar nombre:");
+
+        viewEmpresasBuscar.setText("Buscar");
+        viewEmpresasBuscar.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                viewEmpresasBuscarMouseClicked(evt);
+            }
+        });
+
+        javax.swing.GroupLayout empresasTabLayout = new javax.swing.GroupLayout(empresasTab);
+        empresasTab.setLayout(empresasTabLayout);
+        empresasTabLayout.setHorizontalGroup(
+            empresasTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(empresasTabLayout.createSequentialGroup()
+                .addGroup(empresasTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(empresasTabLayout.createSequentialGroup()
+                        .addGap(37, 37, 37)
+                        .addGroup(empresasTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(empresasTabLayout.createSequentialGroup()
+                                .addGap(86, 86, 86)
+                                .addComponent(jLabel6))
+                            .addGroup(empresasTabLayout.createSequentialGroup()
+                                .addComponent(jLabel14)
+                                .addGap(18, 18, 18)
+                                .addComponent(fieldBuscar_viewEmpresa))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 255, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(empresasTabLayout.createSequentialGroup()
+                        .addGap(116, 116, 116)
+                        .addComponent(viewEmpresasBuscar)))
+                .addGap(35, 35, 35)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(55, 55, 55)
-                .addComponent(jLabel7)
-                .addContainerGap(292, Short.MAX_VALUE))
+                .addGroup(empresasTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, empresasTabLayout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(view_empresaActualizar)
+                        .addGap(126, 126, 126))
+                    .addGroup(empresasTabLayout.createSequentialGroup()
+                        .addGap(55, 55, 55)
+                        .addGroup(empresasTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(empresasTabLayout.createSequentialGroup()
+                                .addComponent(jLabel11)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(empresasTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(nombre_viewEmpresa, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(direccion_viewEmpresa, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(nit_viewEmpresa, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(telefono_viewEmpresa, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(empresasTabLayout.createSequentialGroup()
+                                .addGroup(empresasTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(empresasTabLayout.createSequentialGroup()
+                                        .addComponent(jLabel9)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(id_viewEmpresas))
+                                    .addComponent(jLabel10)
+                                    .addGroup(empresasTabLayout.createSequentialGroup()
+                                        .addGap(125, 125, 125)
+                                        .addComponent(jLabel7))
+                                    .addComponent(jLabel12)
+                                    .addComponent(jLabel13))
+                                .addContainerGap(167, Short.MAX_VALUE))))))
         );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(31, 31, 31)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel6)
-                    .addComponent(jLabel7))
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 283, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+        empresasTabLayout.setVerticalGroup(
+            empresasTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(empresasTabLayout.createSequentialGroup()
+                .addGroup(empresasTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(empresasTabLayout.createSequentialGroup()
+                        .addGap(26, 26, 26)
+                        .addComponent(jLabel7))
+                    .addGroup(empresasTabLayout.createSequentialGroup()
+                        .addGap(23, 23, 23)
+                        .addComponent(jLabel6)))
+                .addGap(5, 5, 5)
+                .addGroup(empresasTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(empresasTabLayout.createSequentialGroup()
+                        .addGroup(empresasTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel9)
+                            .addComponent(id_viewEmpresas))
+                        .addGap(18, 18, 18)
+                        .addGroup(empresasTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel10)
+                            .addComponent(nombre_viewEmpresa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(empresasTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel11)
+                            .addComponent(direccion_viewEmpresa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(empresasTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel12)
+                            .addComponent(nit_viewEmpresa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(empresasTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel13)
+                            .addComponent(telefono_viewEmpresa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(view_empresaActualizar)
+                        .addGap(49, 49, 49))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, empresasTabLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(empresasTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel14)
+                            .addComponent(fieldBuscar_viewEmpresa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(12, 12, 12)
+                        .addComponent(viewEmpresasBuscar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18))))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, empresasTabLayout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
-        jTabbedPane1.addTab("Ver Empresas", jPanel3);
+        jTabbedPane1.addTab("Ver Empresas", empresasTab);
+
+        jLabel8.setText("Número Factura: ");
+
+        numFac_createFac.setBackground(new java.awt.Color(0, 0, 0));
+        numFac_createFac.setFont(new java.awt.Font("Dialog", 1, 24)); // NOI18N
+        numFac_createFac.setForeground(new java.awt.Color(255, 102, 0));
+        numFac_createFac.setText("jLabel15");
+
+        jLabel16.setText("Fecha Factura:");
+
+        date_createFac.setText("jLabel17");
+
+        jLabel18.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        jLabel18.setText("GIRALMOTOR");
+
+        jLabel17.setText("Nombre:");
+
+        nombre_createFac.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        jLabel19.setText("NIT:");
+
+        nit_createFac.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        javax.swing.GroupLayout crearFacturaTabLayout = new javax.swing.GroupLayout(crearFacturaTab);
+        crearFacturaTab.setLayout(crearFacturaTabLayout);
+        crearFacturaTabLayout.setHorizontalGroup(
+            crearFacturaTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(crearFacturaTabLayout.createSequentialGroup()
+                .addGap(29, 29, 29)
+                .addGroup(crearFacturaTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(crearFacturaTabLayout.createSequentialGroup()
+                        .addComponent(jLabel17)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(nombre_createFac, javax.swing.GroupLayout.PREFERRED_SIZE, 258, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel19)
+                        .addGap(18, 18, 18)
+                        .addComponent(nit_createFac, javax.swing.GroupLayout.PREFERRED_SIZE, 223, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(crearFacturaTabLayout.createSequentialGroup()
+                        .addComponent(jLabel8)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(numFac_createFac)
+                        .addGap(80, 80, 80)
+                        .addComponent(jLabel16)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(date_createFac)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 108, Short.MAX_VALUE)
+                        .addComponent(jLabel18)
+                        .addGap(35, 35, 35))))
+            .addGroup(crearFacturaTabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jSeparator2)
+                .addContainerGap())
+        );
+        crearFacturaTabLayout.setVerticalGroup(
+            crearFacturaTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(crearFacturaTabLayout.createSequentialGroup()
+                .addGap(24, 24, 24)
+                .addGroup(crearFacturaTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel8)
+                    .addComponent(numFac_createFac)
+                    .addComponent(jLabel16)
+                    .addComponent(date_createFac)
+                    .addComponent(jLabel18))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(13, 13, 13)
+                .addGroup(crearFacturaTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel17)
+                    .addComponent(nombre_createFac, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel19)
+                    .addComponent(nit_createFac, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(263, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Crear Factura", crearFacturaTab);
+
+        jLabel15.setText("Número de factura actual:");
+
+        buttonSaveConfig.setText("Guardar Cambios");
+        buttonSaveConfig.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                buttonSaveConfigMouseClicked(evt);
+            }
+        });
+
+        javax.swing.GroupLayout configTabLayout = new javax.swing.GroupLayout(configTab);
+        configTab.setLayout(configTabLayout);
+        configTabLayout.setHorizontalGroup(
+            configTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(configTabLayout.createSequentialGroup()
+                .addGap(30, 30, 30)
+                .addComponent(jLabel15)
+                .addGap(18, 18, 18)
+                .addComponent(numFac_config, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, configTabLayout.createSequentialGroup()
+                .addContainerGap(324, Short.MAX_VALUE)
+                .addComponent(buttonSaveConfig)
+                .addGap(264, 264, 264))
+        );
+        configTabLayout.setVerticalGroup(
+            configTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(configTabLayout.createSequentialGroup()
+                .addGap(26, 26, 26)
+                .addGroup(configTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel15)
+                    .addComponent(numFac_config, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 263, Short.MAX_VALUE)
+                .addComponent(buttonSaveConfig)
+                .addGap(35, 35, 35))
+        );
+
+        jTabbedPane1.addTab("Configuración", configTab);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -239,7 +505,7 @@ public class Main2 extends javax.swing.JFrame {
 
     private void guardarEmpMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_guardarEmpMouseClicked
         // TODO add your handling code here:
-        if (this.nit.getText().isEmpty() || this.correo.getText().isEmpty() || this.nombre.getText().isEmpty() || this.telefono.getText().isEmpty()) {
+        if (this.nit.getText().isEmpty() || this.direccion.getText().isEmpty() || this.nombre.getText().isEmpty() || this.telefono.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     "Algun campo se encuentra vacio, no se registró la empresa.",
                     "Inane warning",
@@ -247,7 +513,7 @@ public class Main2 extends javax.swing.JFrame {
         } else {
             Empresa e = new Empresa();
             e.setNit(this.nit.getText());
-            e.setCorreo(this.correo.getText());
+            e.setDireccion(this.direccion.getText());
             e.setNombre(this.nombre.getText());
             e.setTelefono(this.telefono.getText());
             int result = empresaService.createEmpresa(e);
@@ -258,23 +524,103 @@ public class Main2 extends javax.swing.JFrame {
                         JOptionPane.ERROR_MESSAGE);
             } else {
                 this.nit.setText("");
-                this.correo.setText("");
+                this.direccion.setText("");
                 this.nombre.setText("");
                 this.telefono.setText("");
                 JOptionPane.showMessageDialog(this, "La empresa: ." + e.getNombre() + " fue creada.");
             }
         }
-        fillEmpresasList();
+        this.fillEmpresasList("");
     }//GEN-LAST:event_guardarEmpMouseClicked
 
     private void empresasValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_empresasValueChanged
         // TODO add your handling code here:
-        if(!evt.getValueIsAdjusting()){
-            JList source=(JList)evt.getSource();
-            String selected=source.getSelectedValue().toString();
-            System.out.println(selected);
+        if (!evt.getValueIsAdjusting()) {
+            JList source = (JList) evt.getSource();
+            if (source.getSelectedValue() != null) {
+                String selected = source.getSelectedValue().toString();
+                Empresa e = empresaService.searchByNit(selected.split("-\\s")[1].trim());
+                this.editEmpresa = e;
+                this.nombre_viewEmpresa.setText(e.getNombre() == null ? "vacio" : e.getNombre());
+                this.id_viewEmpresas.setText(e.getId().toString());
+                this.nit_viewEmpresa.setText(e.getNit());
+                this.direccion_viewEmpresa.setText(e.getDireccion() == null ? "vacio" : e.getDireccion());
+                this.telefono_viewEmpresa.setText(e.getTelefono() == null ? "vacio" : e.getTelefono());
+            }
         }
     }//GEN-LAST:event_empresasValueChanged
+
+    private void viewEmpresasBuscarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_viewEmpresasBuscarMouseClicked
+        fillEmpresasList(this.fieldBuscar_viewEmpresa.getText());
+    }//GEN-LAST:event_viewEmpresasBuscarMouseClicked
+
+    private void view_empresaActualizarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_view_empresaActualizarMouseClicked
+        if (this.editEmpresa != null) {
+            if (!this.nombre_viewEmpresa.getText().isEmpty() && !this.nombre_viewEmpresa.getText().equalsIgnoreCase("vacio")) {
+                this.editEmpresa.setNombre(this.nombre_viewEmpresa.getText());
+            }
+            if (!this.nit_viewEmpresa.getText().isEmpty() && !this.nit_viewEmpresa.getText().equalsIgnoreCase("vacio")) {
+                this.editEmpresa.setNit(this.nit_viewEmpresa.getText());
+            }
+            if (!this.direccion_viewEmpresa.getText().isEmpty() && !this.direccion_viewEmpresa.getText().equalsIgnoreCase("vacio")) {
+                this.editEmpresa.setDireccion(this.direccion_viewEmpresa.getText());
+            }
+            if (!this.telefono_viewEmpresa.getText().isEmpty() && !this.telefono_viewEmpresa.getText().equalsIgnoreCase("vacio")) {
+                this.editEmpresa.setTelefono(this.telefono_viewEmpresa.getText());
+            }
+            empresaService.updateEmpresa(editEmpresa);
+            JOptionPane.showMessageDialog(this, "La empresa: ." + this.editEmpresa.getNit() + " fue actualizada.");
+        }
+    }//GEN-LAST:event_view_empresaActualizarMouseClicked
+
+    private void buttonSaveConfigMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_buttonSaveConfigMouseClicked
+        try {
+
+            int number = Integer.parseInt(this.numFac_config.getText());
+            if (configuracionService.getConf() == null) {
+                configuracionService.setIndex(number);
+                JOptionPane.showMessageDialog(this, "Configuración guardada");
+            } else {
+                if (number < configuracionService.getConf().getIndex()) {
+                    configuracionService.setIndex(number);
+                    JOptionPane.showMessageDialog(this, "Configuración guardada");
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                            "El número no puede ser menor al actual",
+                            "Inane error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "El número es invalido",
+                    "Inane error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_buttonSaveConfigMouseClicked
+
+    private void jTabbedPane1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTabbedPane1MouseClicked
+        if (this.configTab.isVisible()) {
+            //tab configuracion clicked
+            Configuracion c = configuracionService.getConf();
+            if (c == null) {
+                this.numFac_config.setText("Num factura no definido");
+            } else {
+                this.numFac_config.setText(c.getIndex() + "");
+            }
+        }
+        if (this.crearFacturaTab.isVisible()) {
+            Configuracion c = configuracionService.getConf();
+            this.fechaFactura = new Date();
+            SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd");
+            this.date_createFac.setText(dt.format(fechaFactura));
+            if (c == null) {
+                this.numFac_createFac.setText("Num fac no establecido");
+            } else {
+                this.numFac_createFac.setText(c.getIndex() + "");
+            }
+        }
+    }//GEN-LAST:event_jTabbedPane1MouseClicked
 
     /**
      * @param args the command line arguments
@@ -306,6 +652,7 @@ public class Main2 extends javax.swing.JFrame {
         /* Create and display the form */
         ApplicationContext appContext = new AnnotationConfigApplicationContext(AppConfig.class);
         empresaService = (EmpresaDao) appContext.getBean(EmpresaDao.class);
+        configuracionService = (ConfiguracionDao) appContext.getBean(ConfiguracionDao.class);
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -315,24 +662,53 @@ public class Main2 extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField correo;
+    private javax.swing.JButton buttonSaveConfig;
+    private javax.swing.JPanel configTab;
+    private javax.swing.JPanel crearEmpresaTab;
+    private javax.swing.JPanel crearFacturaTab;
+    private javax.swing.JLabel date_createFac;
+    private javax.swing.JTextField direccion;
+    private javax.swing.JTextField direccion_viewEmpresa;
     private javax.swing.JList<String> empresas;
+    private javax.swing.JPanel empresasTab;
+    private javax.swing.JTextField fieldBuscar_viewEmpresa;
     private javax.swing.JToggleButton guardarEmp;
+    private javax.swing.JLabel id_viewEmpresas;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextField nit;
+    private javax.swing.JComboBox<String> nit_createFac;
+    private javax.swing.JTextField nit_viewEmpresa;
     private javax.swing.JTextField nombre;
+    private javax.swing.JComboBox<String> nombre_createFac;
+    private javax.swing.JTextField nombre_viewEmpresa;
+    private javax.swing.JTextField numFac_config;
+    private javax.swing.JLabel numFac_createFac;
     private javax.swing.JTextField telefono;
+    private javax.swing.JTextField telefono_viewEmpresa;
+    private javax.swing.JButton viewEmpresasBuscar;
+    private javax.swing.JButton view_empresaActualizar;
     // End of variables declaration//GEN-END:variables
 }
