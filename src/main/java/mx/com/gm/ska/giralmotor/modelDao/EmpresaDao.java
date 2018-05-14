@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 public interface EmpresaDao {
     public int createEmpresa(Empresa e);
     public Empresa searchByNit(String nit);
-    public int updateEmpresa(String nit, String newNit, String nombre, String correo, String celular);
+    public int updateEmpresa(Empresa e);
     public List<Empresa> getAllEmpresas();
+    public List<Empresa> searchEmpresaByName(String nombre);
 }

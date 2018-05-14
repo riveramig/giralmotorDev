@@ -6,10 +6,12 @@
 package mx.com.gm.ska.giralmotor.DaoImpl;
 
 import java.util.List;
+import java.util.regex.Pattern;
 import mx.com.gm.ska.giralmotor.model.Empresa;
 import mx.com.gm.ska.giralmotor.modelDao.EmpresaDao;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.query.Query;
+import org.mongodb.morphia.query.UpdateOperations;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -41,15 +43,30 @@ public class EmpresaDaoImpl implements EmpresaDao{
     }
 
     @Override
-    public int updateEmpresa(String nit, String newNit, String nombre, String correo, String celular) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public List<Empresa> getAllEmpresas() {
         Query<Empresa>query=dataStore.createQuery(Empresa.class);
         query.order("-nombre");
         return query.asList();
+    }
+
+    @Override
+    public List<Empresa> searchEmpresaByName(String nombre) {
+        Query<Empresa>query=dataStore.createQuery(Empresa.class);
+        Pattern regexp =Pattern.compile(nombre, Pattern.CASE_INSENSITIVE);
+        return query.filter("nombre", regexp).asList();
+    }
+
+    @Override
+    public int updateEmpresa(Empresa e) {
+        Query<Empresa>query=dataStore.createQuery(Empresa.class);
+        query.filter("id ==", e.getId());
+        UpdateOperations<Empresa>ops=dataStore.createUpdateOperations(Empresa.class);
+        ops.set("nit", e.getNit());
+        ops.set("nombre", e.getNombre());
+        ops.set("correo",e.getDireccion());
+        ops.set("telefono", e.getTelefono());
+        dataStore.update(query, ops);
+        return 1;
     }
     
 }

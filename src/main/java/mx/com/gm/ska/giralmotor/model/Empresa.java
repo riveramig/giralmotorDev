@@ -18,7 +18,7 @@ public class Empresa {
     @Id
     private ObjectId id;
     private String nombre;
-    private String correo;
+    private String direccion;
     private String nit;
     private String telefono;
 
@@ -54,17 +54,17 @@ public class Empresa {
         this.id = id;
     }
 
-    public String getCorreo() {
-        return correo;
+    public String getDireccion() {
+        return direccion;
     }
 
-    public void setCorreo(String correo) {
-        this.correo = correo;
+    public void setDireccion(String direccion) {
+        this.direccion = direccion;
     }
 
     @Override
     public String toString() {
-        return "Empresa{" + "id=" + id + ", nombre=" + nombre + ", correo=" + correo + ", nit=" + nit + ", telefono=" + telefono + '}';
+        return "Empresa{" + "id=" + id + ", nombre=" + nombre + ", correo=" + direccion + ", nit=" + nit + ", telefono=" + telefono + '}';
     }
 
     

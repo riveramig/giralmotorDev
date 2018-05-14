@@ -6,7 +6,9 @@
 package mx.com.gm.ska.giralmotor.config;
 
 import com.mongodb.MongoClient;
+import mx.com.gm.ska.giralmotor.DaoImpl.ConfiguracionDaoImpl;
 import mx.com.gm.ska.giralmotor.DaoImpl.EmpresaDaoImpl;
+import mx.com.gm.ska.giralmotor.modelDao.ConfiguracionDao;
 import mx.com.gm.ska.giralmotor.modelDao.EmpresaDao;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
@@ -38,5 +40,11 @@ public class AppConfig {
    @Scope("singleton")
    public EmpresaDao empresaService(){
        return new EmpresaDaoImpl();
+   }
+   
+   @Bean
+   @Scope("singleton")
+   public ConfiguracionDao configuracionService(){
+       return new ConfiguracionDaoImpl();
    }
 }
